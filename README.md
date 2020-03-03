@@ -270,7 +270,7 @@ Function Descriptions:
  
  
 Known Bugs/Unfinished Portions: 
-1.  No known bugs, at this time.
+1.  Elevator waits 2*time on the top and bottom floors. (4 secs instead of 2)
     return -ERRNUM is not implemented
 Bug: When changing directory into the subdirectory the prompt does not print out whole working directory and just the directory it is currently in
     - It is happening because there is no resolution of the directory name when the directory is changed
