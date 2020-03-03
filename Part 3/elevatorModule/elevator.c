@@ -42,7 +42,7 @@ static struct file_operations fops;
 struct list_head elevList;
 struct list_head floorLists[10];
 
-typedef struct person
+typedef struct person				//struct for both list of people on elevator and on each floor
 {
 	struct list_head list;
 	int num_pets;
@@ -64,7 +64,7 @@ struct thread_parameter elevThread;
 char *message;
 int read_p;
 
-int elevator_state;
+int elevator_state;				//GLOBAL VARIABLES
 int elevator_animal;
 int elevator_direction;
 int current_floor;
@@ -78,7 +78,8 @@ int offload_only;
 extern long (*STUB_issue_request)(int, int, int, int);
 long issue_request(int num_pets, int pet_type, int start_floor, int destination_floor)
 {
-	Person *p;
+	Person *p;	//teamp person pointer
+			//initializes all request info based on this 
 
         printk(KERN_NOTICE "System call issue_request called.\n");
 
@@ -110,7 +111,7 @@ long issue_request(int num_pets, int pet_type, int start_floor, int destination_
 
 	passengers_waiting += 1+num_pets;
 
-	list_add_tail(&p->list, &floorLists[p->start_floor]);
+	list_add_tail(&p->list, &floorLists[p->start_floor]);		//adds person to floor list
 
         return 0;
 }
@@ -125,7 +126,7 @@ long start_elevator(void)
 	}
 	else
 	{
-
+			//INITIALIZING THE ELEVATOR
 		elevator_state = IDLE;
 		current_floor = 0;
 		num_passengers = 0;
@@ -141,7 +142,7 @@ long stop_elevator(void)
 {
         printk(KERN_NOTICE "System call stop_elevator.\n");
 
-	if (offload_only == 0)
+	if (offload_only == 0)			//FLAG TO STOP LOADING AND TO ONLY UNLOAD
 	{
 		offload_only = 1;
 		return 0;
@@ -304,17 +305,17 @@ void thread_init_parameter(struct thread_parameter *parm)
 
 static int elevator_init(void)
 {
-	int i;
+	int i;					//INITIALIZE ELEVATOR MODULE
 
-	fops.open = elevator_proc_open;
+	fops.open = elevator_proc_open;		//INTIALIZING FILE OPERATORS
 	fops.read = elevator_proc_read;
 	fops.release = elevator_proc_release;
 
-        STUB_start_elevator = start_elevator;
+        STUB_start_elevator = start_elevator;		//INITIALIZING STUBS
         STUB_issue_request = issue_request;
         STUB_stop_elevator = stop_elevator;
-
-	elevator_state = OFFLINE;
+	
+	elevator_state = OFFLINE;				//SETTING ALL GLOBAL VARIABLES
 	elevator_animal = 0;
 	current_floor = 0;
 	num_passengers = 0;
@@ -323,7 +324,7 @@ static int elevator_init(void)
 	passengers_serviced = 0;
 
 	for(i = 0; i < 10; i++)
-		num_pass_floor[i] = 0;
+		num_pass_floor[i] = 0;				//SETTING NUMBER OF PEOPLE ON FLOORS = 0
 
 	INIT_LIST_HEAD(&elevList);
 
@@ -331,7 +332,7 @@ static int elevator_init(void)
 		INIT_LIST_HEAD(&floorLists[i]);
 
 	thread_init_parameter(&elevThread);
-	if(IS_ERR(elevThread.kthread))
+	if(IS_ERR(elevThread.kthread))				//ERROR CHECKING
 	{
 		printk(KERN_WARNING "ERROR: elevator thread.\n");
 		remove_proc_entry(MODULE_NAME, NULL);
@@ -340,7 +341,7 @@ static int elevator_init(void)
 
 	printk(KERN_NOTICE "Creating proc/elevator.\n");
 
-	if(!proc_create(MODULE_NAME, PERMS, NULL, &fops))
+	if(!proc_create(MODULE_NAME, PERMS, NULL, &fops))		//ERROR CHECKING
 	{
 		printk(KERN_NOTICE "Error creating proc/elevator.");
 		remove_proc_entry(MODULE_NAME, NULL);
@@ -351,15 +352,15 @@ static int elevator_init(void)
 }
 module_init(elevator_init);
 
-static void elevator_exit(void)
+static void elevator_exit(void)				//EXITING ELEVATOR
 {
-        STUB_start_elevator = NULL;
+        STUB_start_elevator = NULL;			//TURNING OFF STUBS
         STUB_issue_request = NULL;
         STUB_stop_elevator = NULL;
 
-	kthread_stop(elevThread.kthread);
+	kthread_stop(elevThread.kthread);		//STOPPING THREAD
 	remove_proc_entry(MODULE_NAME, NULL);
-	mutex_destroy(&elevThread.mutex);
+	mutex_destroy(&elevThread.mutex);		//KILLS MUTEX
 
 	printk(KERN_NOTICE "Removed proc/elevator.\n");
 
@@ -367,7 +368,7 @@ static void elevator_exit(void)
 module_exit(elevator_exit);
 
 
-int thread_run(void *data)
+int thread_run(void *data)				//RUNNING ELEVATOR FUCTION
 {
 	int i;
 
@@ -382,7 +383,7 @@ int thread_run(void *data)
 
 			while(elevator_state != OFFLINE)
 			{
-				for(i = 0; i < 10; i++)
+				for(i = 0; i < 10; i++)			//LOOPING FROM FLOOR 1 TO 10
 				{
 					elevator_state = UP;
 					elevator_direction = UP;
@@ -391,7 +392,7 @@ int thread_run(void *data)
 					if(current_weight != 0)
 						unloadElev();
 
-                        		if (offload_only == 1 && current_weight == 0)
+                        		if (offload_only == 1 && current_weight == 0)	//STOPS ELEVATOR LOADING
                         		{
                                 		elevator_state = OFFLINE;
                                 		break;
@@ -413,7 +414,7 @@ int thread_run(void *data)
 
 				if(elevator_state == OFFLINE) break;
 
-				for (i = 10; i > 0; i--)
+				for (i = 10; i > 0; i--)			//LOOPING FROM FLOOR 10 TO 1
 				{
 					elevator_state = DOWN;
 					elevator_direction = DOWN;
@@ -449,14 +450,14 @@ int thread_run(void *data)
 }
 
 
-void loadElev(void)
+void loadElev(void)				//FUNCTION FOR LOADING ELEVATOR 
 {
 	struct list_head *temp;
 	struct list_head *dummy;
 
 	Person *p;
 
-	list_for_each_safe(temp, dummy, &floorLists[current_floor])
+	list_for_each_safe(temp, dummy, &floorLists[current_floor])			//LOOPS THROUGH PEOPLE ON THE FLOOR
 	{
 		p = list_entry(temp, Person, list);
 
@@ -464,8 +465,8 @@ void loadElev(void)
 		{
 			if(p->pet_type == elevator_animal || elevator_animal == 0)
 			{
-				if(p->direction == elevator_direction)
-				{
+				if(p->direction == elevator_direction)		//3 IF STATEMENTS TO CHECK IF WE SHOULD LOAD
+				{						//HANDLES ARE GLOBAL VARAIBLE INFO 
 					num_pass_floor[current_floor] -= (1 + p->num_pets);
 
 					elevator_animal = p->pet_type;
@@ -490,12 +491,12 @@ void unloadElev(void)
 	struct list_head *dummy;
        	Person *p;
 
-	list_for_each_safe(temp, dummy, &elevList)
+	list_for_each_safe(temp, dummy, &elevList)			//LOOPS THROUGH PEOPLE ON THE FLOOR
 	{
 		p = list_entry(temp, Person, list);
 
-		if(p->destination_floor == current_floor)
-		{
+		if(p->destination_floor == current_floor)		//IF THIS IS A PASSENGERS FLOOR DROP OFF
+		{							//HANDLES GLOBAL VARIABLES
 			current_weight -= p->weight;
 			num_passengers -= (1+p->num_pets);
 			passengers_serviced += (1+p->num_pets);
