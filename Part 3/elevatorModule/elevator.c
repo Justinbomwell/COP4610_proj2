@@ -89,9 +89,11 @@ long issue_request(int num_pets, int pet_type, int start_floor, int destination_
 
 	p = kmalloc(sizeof(Person), __GFP_RECLAIM);
 	p->num_pets = num_pets;
-	p->pet_type = pet_type;
-	p->start_floor = start_floor;
-	p->destination_floor = destination_floor;
+	p->pet_type = 0;
+	if(p->num_pets > 0)
+		p->pet_type = pet_type;
+	p->start_floor = start_floor-1;
+	p->destination_floor = destination_floor-1;
 
 	if(start_floor > destination_floor) p->direction = DOWN;
 	else if(start_floor < destination_floor) p->direction = UP;
@@ -104,11 +106,11 @@ long issue_request(int num_pets, int pet_type, int start_floor, int destination_
 
 	p->weight = 3 + num_pets*pet_type;
 
-	num_pass_floor[start_floor -1] += 1+num_pets;
+	num_pass_floor[p->start_floor] += 1+num_pets;
 
 	passengers_waiting += 1+num_pets;
 
-	list_add_tail(&p->list, &floorLists[start_floor]);
+	list_add_tail(&p->list, &floorLists[p->start_floor]);
 
         return 0;
 }
@@ -125,7 +127,7 @@ long start_elevator(void)
 	{
 
 		elevator_state = IDLE;
-		current_floor = 1;
+		current_floor = 0;
 		num_passengers = 0;
 		current_weight = 0;
 		offload_only = 0;
@@ -152,7 +154,12 @@ long stop_elevator(void)
 int elevator_proc_open(struct inode *sp_inode, struct file *sp_file)
 {
         int i;
+	int j;
 	char * buf;
+
+	Person *p;
+
+	struct list_head *temp;
 
         printk(KERN_NOTICE "elevator_proc_open called.\n");
         read_p = 1;
@@ -209,8 +216,13 @@ int elevator_proc_open(struct inode *sp_inode, struct file *sp_file)
                 sprintf(buf, "Elevator Animals: %s\n", "DOG");
                 strcat(message, buf);
         }
+	else if(elevator_animal == 0)
+	{
+                sprintf(buf, "Elevator Animals: %s\n", "NONE");
+                strcat(message, buf);
+	}
 
-        sprintf(buf, "Current Floor: %d\n", current_floor);
+        sprintf(buf, "Current Floor: %d\n", (current_floor+1));
 	strcat(message, buf);
         sprintf(buf, "Number of Passengers: %d\n", num_passengers);
 	strcat(message, buf);
@@ -226,11 +238,36 @@ int elevator_proc_open(struct inode *sp_inode, struct file *sp_file)
 
         for (i = 10; i > 0; i--)
         {
-		if(current_floor == i)
-                	sprintf(buf, "[*] Floor %d: %d\n", i, num_pass_floor[i-1]);
+		if(current_floor == i-1)
+                	sprintf(buf, "[*] Floor %d: %d", i, num_pass_floor[i-1]);
 		else
-			sprintf(buf, "[ ] Floor %d: %d\n", i, num_pass_floor[i-1]);
+			sprintf(buf, "[ ] Floor %d: %d", i, num_pass_floor[i-1]);
 
+		strcat(message, buf);
+
+		list_for_each(temp, &floorLists[i-1])
+		{
+			p = list_entry(temp, Person, list);
+
+			sprintf(buf, " |");
+			strcat(message, buf);
+
+			for(j = 0; j < p->num_pets; j++)
+			{
+				if(p->pet_type == DOG_TYPE)
+				{
+					sprintf(buf, " x");
+					strcat(message, buf);
+				}
+				else if(p->pet_type == CAT_TYPE)
+				{
+					sprintf(buf, " o");
+					strcat(message, buf);
+				}
+			}
+		}
+
+		sprintf(buf, "\n");
 		strcat(message, buf);
         }
 
@@ -279,7 +316,7 @@ static int elevator_init(void)
 
 	elevator_state = OFFLINE;
 	elevator_animal = 0;
-	current_floor = 1;
+	current_floor = 0;
 	num_passengers = 0;
 	current_weight = 0;
 	passengers_waiting = 0;
@@ -351,7 +388,8 @@ int thread_run(void *data)
 					elevator_direction = UP;
 
 					elevator_state = LOADING;
-					unloadElev();
+					if(current_weight != 0)
+						unloadElev();
 
                         		if (offload_only == 1 && current_weight == 0)
                         		{
@@ -381,7 +419,8 @@ int thread_run(void *data)
 					elevator_direction = DOWN;
 
 					elevator_state = LOADING;
-					unloadElev();
+					if(current_weight != 0)
+						unloadElev();
 
                         		if (offload_only == 1 && current_weight == 0)
                         		{
@@ -413,9 +452,11 @@ int thread_run(void *data)
 void loadElev(void)
 {
 	struct list_head *temp;
+	struct list_head *dummy;
+
 	Person *p;
 
-	list_for_each(temp, &floorLists[current_floor])
+	list_for_each_safe(temp, dummy, &floorLists[current_floor])
 	{
 		p = list_entry(temp, Person, list);
 
@@ -425,19 +466,18 @@ void loadElev(void)
 			{
 				if(p->direction == elevator_direction)
 				{
+					num_pass_floor[current_floor] -= (1 + p->num_pets);
+
 					elevator_animal = p->pet_type;
 
-                                        passengers_waiting--;
+                                        passengers_waiting -= (1+p->num_pets);
                                         current_weight += p->weight;
 
-					num_passengers += 1;
+					num_passengers += (1+p->num_pets);
 
 					ssleep(1);
 
-                                        list_add_tail(&p->list, &elevList);
-
-					list_del(temp);
-					kfree(temp);
+                                        list_move_tail(temp, &elevList);
 				}
 			}
 		}
@@ -447,22 +487,23 @@ void loadElev(void)
 void unloadElev(void)
 {
 	struct list_head *temp;
+	struct list_head *dummy;
        	Person *p;
 
-	list_for_each(temp, &elevList)
+	list_for_each_safe(temp, dummy, &elevList)
 	{
 		p = list_entry(temp, Person, list);
 
 		if(p->destination_floor == current_floor)
 		{
 			current_weight -= p->weight;
-			num_passengers--;
-			passengers_serviced++;
+			num_passengers -= (1+p->num_pets);
+			passengers_serviced += (1+p->num_pets);
 
 			ssleep(1);
 
 			list_del(temp);
-			kfree(temp);
+			kfree(p);
 		}
 	}
 
