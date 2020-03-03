@@ -379,7 +379,6 @@ int thread_run(void *data)				//RUNNING ELEVATOR FUCTION
 
 		if(mutex_lock_interruptible(&parm->mutex)==0)
 		{
-			printk(KERN_NOTICE "Might be working?");
 
 			while(elevator_state != OFFLINE)
 			{
