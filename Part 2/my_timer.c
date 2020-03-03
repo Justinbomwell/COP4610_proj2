@@ -16,6 +16,7 @@ MODULE_DESCRIPTION("Display the value of my_timer on each proc read.");
 #define MODULE_PERMISSIONS 0644
 #define MODULE_PARENT NULL
 #define STRING_LENGTH 256
+#define MALLOC_FLAGS __GFP_RECLAIM | __GFP_IO | __GFP_FS
 
 static struct file_operations operations; // Points to proc file definitions.
 static char *string1, *string2;
@@ -25,21 +26,27 @@ struct timespec currentTime;
 long elapsedSecs;
 long elapsed_ns;
 
-unsigned long copy_to_user(void __user *to,const void *from, unsigned long size);
 
-static struct Time
+static int timer_module_init(void);
+int timer_proc_open(struct inode *sp_inode, struct file *sp_file);
+ssize_t timer_read_proc(struct file *sp_file, char __user*buffer, size_t size, loff_t *offset);
+int timer_proc_release(struct inode *sp_inode, struct file *sp_file);
+unsigned long copy_to_user(void __user *to,const void *from, unsigned long size);
+static void timer_module_exit(void);
+
+static struct time
 {
     long seconds;
     long nanoseconds;
 } time;
 
-static int InitializeModule(void)
+static int timer_module_init(void)
 {
     printk(KERN_NOTICE "Creating /proc/%s.\n", MODULE_NAME);
 
-    operations.open = OpenProc;
-    operations.read = ReadProc;
-    operations.release = ReleaseProc;
+    operations.open = timer_proc_open;
+    operations.read = timer_read_proc;
+    operations.release = timer_proc_release;
 
     if (!proc_create(MODULE_NAME, MODULE_PERMISSIONS, MODULE_PARENT, &operations))
     {
@@ -52,15 +59,15 @@ static int InitializeModule(void)
     return 0;
 }
 
-int OpenProc(struct inode *sp_inode, struct file *sp_file)
+int timer_proc_open(struct inode *sp_inode, struct file *sp_file)
 {
-    printk(KERN_INFO "OpenProc() called.\n");
+    printk(KERN_INFO "timer_proc_open() called.\n");
     readProc = 1;
 
     procReadNumber++;
 
-    string1 = kmalloc(sizeof(char) * STRING_LENGTH, __GFP_RECLAIM | __GFP_IO | __GFP_FS);
-    string2 = kmalloc(sizeof(char) * STRING_LENGTH, __GFP_RECLAIM | __GFP_IO | __GFP_FS);
+    string1 = kmalloc(sizeof(char) * STRING_LENGTH, MALLOC_FLAGS);
+    string2 = kmalloc(sizeof(char) * STRING_LENGTH, MALLOC_FLAGS);
     if (string1 == NULL || string2 == NULL) {
         printk(KERN_WARNING "Error: could not allocate memory for a string.");
 
@@ -93,23 +100,25 @@ int OpenProc(struct inode *sp_inode, struct file *sp_file)
     return 0;
 }
 
-ssize_t ReadProc(struct file *sp_file, char __user *buffer, size_t size, loff_t *offset)
+ssize_t timer_read_proc(struct file *sp_file, char __user
+
+*buffer, size_t size, loff_t *offset)
 {
-    int length = strlen(string1);
+int length = strlen(string1);
 
-    readProc = !readProc;
-    if (readProc == 1)
-    {
-        return 0;
-    }
-
-    printk(KERN_INFO "ReadProc() called.\n");
-    copy_to_user(buffer, string1, length);
-
-    return length;
+readProc = !readProc;
+if (readProc == 1)
+{
+return 0;
 }
 
-int ReleaseProc(struct inode *sp_inode, struct file *sp_file)
+printk(KERN_INFO "ReadProc() called.\n");
+copy_to_user(buffer, string1, length);
+
+return length;
+}
+
+int timer_proc_release(struct inode *sp_inode, struct file *sp_file)
 {
     printk(KERN_NOTICE "ReleaseProc() has been called.\n");
     kfree(string1);
@@ -119,12 +128,11 @@ int ReleaseProc(struct inode *sp_inode, struct file *sp_file)
 }
 
 
-
-static void ExitModule(void)
+static void timer_module_exit(void)
 {
     printk(KERN_NOTICE "Removing /proc/%s.\n", MODULE_NAME);
     remove_proc_entry(MODULE_NAME, MODULE_PARENT);
 }
 
-module_init(InitializeModule);
-module_exit(ExitModule);
+module_init(timer_module_init);
+module_exit(timer_module_exit);
