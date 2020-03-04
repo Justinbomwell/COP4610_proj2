@@ -24,7 +24,9 @@ Team Members and Responsibilities:
 
   
 Tar Archive Contents:
+  
   PART1:
+    
     empty.c:  
       • Empty C program, for strace analysis.
   
