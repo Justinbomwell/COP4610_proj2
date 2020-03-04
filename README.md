@@ -14,7 +14,9 @@ Team Members and Responsibilities:
   • Implementation of all functions in main using func()
 
   Scott Forn:
+  
   • Part 1
+  
   • Part 2
   
   
@@ -24,35 +26,60 @@ Team Members and Responsibilities:
   
 Tar Archive Contents:
   PART1:
+  
   empty.c:
+  
   • Empty C program, for strace analysis.
   
+  
   part1.c:
+  
   • C file that contains ONLY the <unistd.h> library
+  
   • Accesses "/home" 5 times, so that strace can show the difference in the number of system calls made.
   
+  
   executionProcessing.c:
+  
   • Define Normal Execute function
+  
   • Define Background Processesing Execution
+  
   • Define Built Ins
   
+  
   empty.log:
+  
   • File containing a log of all of the system calls executed. (67 of them)
   
+  
   part1.log:
+  
   • File containing a log of all of the system calls executed. (72 of them)
+  
   • Shows the 5 "access("/home", F_OK)                   = 0" calls at the end of the file.
   
+  
   makefile:
+  
   • Compiles empty.c and part1.c
+  
   • Executes strace on empty.x and part1.x to create empty.log and part1.log
   
   
+  
+  
   Compilation Instructions:
+  
   • To compile the project, move to the working directory that contains our opened .tar file
+  
   • Type "make" into the command line 
+  
   • To clean the directory the shell is running in, type "make clean" into the command line.
+  
   • This will remove the .o files and the "shell" executable.
+  
+  
   
   
   
@@ -61,133 +88,241 @@ Tar Archive Contents:
   
   PART2:
   
+  
   my_timer.c:
+  
   • Prints prompt
+  
   • Parses instructions
+  
   • Shorcut Resolution function
+  
   • Resolves Environmental Variables
+  
   • Path Resolution function
+  
   • Input/Output Redirection function
+  
   • Piping functions
+  
   • Function to implement the other functions and runs shell in main
   
+  
+  
   makefile:
+  
   • Create my_timer.o in /lib/modules/
 
+  
   Compilation Instructions:
+  
   • To compile the project, move to the working directory that contains our opened .tar file
+  
   • Type "make" into the command line 
+  
   • To clean the directory the shell is running in, type "make clean" into the command line.
+  
   • This will remove the .o files and the "shell" executable.
+  
+  
   
   
   ////////////////////////////////////////////////////////////////////////////////////////////
+  
   PART3:
+  
   elevator.c:
+  
   • Prints prompt
+  
   • Parses instructions
+  
   • Shorcut Resolution function
+  
   • Resolves Environmental Variables
+  
   • Path Resolution function
+  
   • Input/Output Redirection function
+  
   • Piping functions
+  
   • Function to implement the other functions and runs shell in main
   
+  
   executionProcessing.h:
+  
   • Declare Normal Execute function
+  
   • Declare Background Processesing Execution
+  
   • Declare Built Ins
   
+  
   executionProcessing.c:
+  
   • Define Normal Execute function
+  
   • Define Background Processesing Execution
+  
   • Define Built Ins
   
+  
+  
   Makefile:
+  
   • compile main.c, executionProcessing.h & executionProcessing.c
   
+  
+
 Compilation Instructions:
+
   • To compile the project, move to the working directory that contains our opened .tar file
+  
   • Type "make" into the command line 
+  
   • To clean the directory the shell is running in, type "make clean" into the command line.
+  
   • This will remove the .o files and the "shell" executable.
+
+
 
 
 
 Function Descriptions: 
 
+
+
 1. void addToken(instruction* instr_ptr, char* tok)
+  
   - Take in struct instruction and c-string command from the command line
+  
   - Make space for an additional token in the instruction
+  
   - place the c-string tok into the new token that was allocated
 
+
 2. void printTokens(instruction* instr_ptr)
+  
   - print each individual token on a new line from the instruction 
 
+
 3. void clearInstruction(instruction* instr_ptr)
+  
   - Go through the instructions individual tokens and free their memory
+  
   - Free the actual instruction 
+  
   - Set the instruction to NULL and numTokens of the instruction to 0
 
+
+
 4. void addNull(instruction* instr_ptr)
+  
   - After all of the commands are entered on the command line one last token is added to the instruction and set as NULL
 
 5. void IOredirection( instruction* instr_ptr, int bGround)
+  
   - This function takes in the instruction pointer, and an integer which will equal 1 if the command should be run in the background or 0 if the command should not 
+  
   - This function first parses through the tokens to determine which will be the input file and which will be the output file
+  
   - The fork function is called and in the child process redirects the input and output only if there are input and output files respectively 
+  
   - Then the my_execute function is called to run the command and the child process is exited.  
 
 6. void singlepipe( instruction* instr_ptr, int bGround)
+  
   - This function takes in the instruction pointer, and an integer which will equal 1 if the command should be run in the background or 0 if the command should not
+  
   - First this function copies the writing function and the reading function as tokens in the two instruction variables cmd1 and cmd2
+  
   - The program forks, the pipe function is called, and program forks again
+  
   - Inside the first child the input and output file descriptors are changed, the first function is executed, and the child process is terminated
+  
   - Again inside the seccond child the input and output file descriptors are changed, the seccond function is executed, and the child process is terminated
+  
   - The parent program then calls the wait function to wait for the child processes to finish
 
 7. void doublepipe( instruction* instr_ptr, int bGround)
+  
   - This function takes in the instruction pointer, and an integer which will equal 1 if the command should be run in the background or 0 if the command should not
+  
   - command holder variables are made and initialized
+  
   - The loop copies over the tokens of each part to the three command variables
+  
   - The three children processes each call execute on the three commands
 
 8. void enVar(instruction* instr_ptr)
+  
   - For loops through tokens of instruction
+  
   - Checks to see for environmental variables such as "$HOME"
-    - expands environmental variables using getenv
+  
+  - expands environmental variables using getenv
 
 9. void printPrompt()
+  
   - Prints the user, machine and working directory before the user enters anything on the command line
 
 10. int shortRes(instruction* instr_ptr)
+  
   - For loops through each token of the instruction
+  
   - Checks for a token that equals '.', "..", or '~'
-    - In the case for '.' 
-      - Reallocate new size of token to equal the string length of the working directory
-      - Copy working directory string over to the token previously holding '.' string
-    - In the case for ".."
-      - Get the location of the second to last '/' in the working directory string
-      - Reallocate the ".." string to equal the size of the position of the last '/' in the working directory
-      - Copy the working directory into the token previously holding ".." until the parent directory
-    - In the case for '~'
-      - Reallocate new size of token to equal the string length of the home directory
-      - Copy home directory string over to the token previously holding '~'
+  
+  - In the case for '.' 
+  
+  - Reallocate new size of token to equal the string length of the working directory
+  
+  - Copy working directory string over to the token previously holding '.' string
+  
+  - In the case for ".."
+  
+  - Get the location of the second to last '/' in the working directory string
+  
+  - Reallocate the ".." string to equal the size of the position of the last '/' in the working directory
+  
+  - Copy the working directory into the token previously holding ".." until the parent directory
+  
+  - In the case for '~'
+  
+  - Reallocate new size of token to equal the string length of the home directory
+  
+  - Copy home directory string over to the token previously holding '~'
+  
   - Checks for a token containing '/' anywhere in the string
-    - Checks if first character of the token is '~'
-      - Allocate new memory for size of home directory string + Original token string length -1 because removing '~'
-      - Replace '~' with the home directory and then concatenate the rest of the string onto the end
-    - Tokenize the instruction token string with the delimiter being '/' in a while loop until no more tokens
-      - If new token equals '.' 
-        - Make the new token the size of the working directory 
-        - make new token previously containg '.' into the working directory
-        - Concatenate the new token to the original token then concatenate a '/' onto the end
-      - If new token equals ".."
-        - Make sure it is not the first token from the original token. If so break the loop
-        - If it isnt the first token then find where the second to last '/' is in the original token
-        - Take off all the characters of the token after the second to last '/' in the string
+  
+  - Checks if first character of the token is '~'
+  
+  - Allocate new memory for size of home directory string + Original token string length -1 because removing '~'
+  
+  - Replace '~' with the home directory and then concatenate the rest of the string onto the end
+  
+  - Tokenize the instruction token string with the delimiter being '/' in a while loop until no more tokens
+  
+  - If new token equals '.' 
+  
+  - Make the new token the size of the working directory 
+  
+  - make new token previously containg '.' into the working directory
+  
+  - Concatenate the new token to the original token then concatenate a '/' onto the end
+  
+  - If new token equals ".."
+  
+  - Make sure it is not the first token from the original token. If so break the loop
+  
+  - If it isnt the first token then find where the second to last '/' is in the original token
+  
+  - Take off all the characters of the token after the second to last '/' in the string
+  
   - Check if the tokens resolved for shorcuts are either files or directories
+  
   - If not file or directory return 0, If it is a file or directory then return 1
+
 
 11. int pathRes(instruction* instr_ptr)
   - For loop through all tokens of the instruction
