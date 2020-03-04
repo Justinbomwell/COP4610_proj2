@@ -2,18 +2,23 @@
 README
 
 Team Members and Responsibilities:
+  
   Conrad Horn:
     • Part 3 - System Calls
     • Part 3 - Proc (open, read, release)
+  
   
   Justin Bomwell:
     • I/O Redirection
     • Pipes
     • 
 
+  
   Scott Forn:
-    • Part 1
-    • Part 2
+  
+  • Part 1
+  
+  • Part 2
   
   //////////////////////////////////////////////////////////////////////////////////////////
 
