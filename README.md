@@ -8,17 +8,24 @@ Team Members and Responsibilities:
       • Part 3 - Proc (open, read, release)
   
     Justin Bomwell:
-      • 
+      • start_elevator
       • Scheduling Code
-      • 
+      • stop_elevator
+      • issue_request
+      • load_elev
+      • unload_elev
 
     Scott Forn:
       • Part 1
       • Part 2
+      • Scheduling Theory
+      • stop_elevator
+      • load_elev
       
       
       NOTE: As Part 3 was completed on a single computer, the processes and functional development/coding was a group effort of 3 students huddled around a computer, for three days.
   
+  *All 3 provided error checking and bug hunting.
 
   
 Tar Archive Contents:
