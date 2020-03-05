@@ -6,6 +6,8 @@ Team Members and Responsibilities:
     Conrad Horn:
       • Part 3 - System Calls
       • Part 3 - Proc (open, read, release)
+      • issue_request
+      • load_elev
   
     Justin Bomwell:
       • start_elevator
@@ -25,7 +27,7 @@ Team Members and Responsibilities:
       
       NOTE: As Part 3 was completed on a single computer, the processes and functional development/coding was a group effort of 3 students huddled around a computer, for three days.
   
-  *All 3 provided error checking and bug hunting.
+  *All 3 provided error checking and bug hunting... as well as comedic relief.
 
   
 Tar Archive Contents:
