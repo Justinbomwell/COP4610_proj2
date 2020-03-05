@@ -44,19 +44,19 @@ Tar Archive Contents:
     makefile:
       • Compiles empty.c and part1.c
       • Executes strace on empty.x and part1.x to create empty.log and part1.log
-  
-    Compilation Instructions:
-      • To compile the project, move to the working directory that contains our opened .tar file
-      • Type "make" into the command line 
-      • To clean the directory the shell is running in, type "make clean" into the command line.
-      • This will remove the .o files and the "shell" executable.
+      
+Compilation Instructions:
+    • To compile the project, move to the working directory that contains our Part1 folder.
+    • Type "make" into the command line. This will compile the files and run strace, pushing the results to the .log files. 
+    • To clean the directory, type "make clean" into the command line.
+    • This will remove the *.o and *.log files.
   
   
   ////////////////////////////////////////////////////////////////////////////////////////////
   
   
   PART2:
-  
+    
     my_timer.c:
       • Prints prompt
       • Parses instructions
@@ -67,14 +67,19 @@ Tar Archive Contents:
       • Piping functions
       • Function to implement the other functions and runs shell in main
   
-    makefile:
-      • Create my_timer.o in /lib/modules/
+    Makefile:
+      • Creates my_timer.o in /lib/modules/
 
-    Compilation Instructions:
-      • To compile the project, move to the working directory that contains our opened .tar file
-      • Type "make" into the command line 
-      • To clean the directory the shell is running in, type "make clean" into the command line.
-      • This will remove the .o files and the "shell" executable.
+   Compilation and Running Instructions:
+    • To compile the project, move to the working directory (usr/src) that contains the Part2 Folder.
+    • Enter the folder
+    • Type "sudo make" into the command line
+    • Type "sudo insmod my_timer.ko" to insert the kernel module, followed by "lsmod|grep my_timer", to verify that the module was inserted correctly.
+    • Run the "cat /proc/timed" command, to output the current time.
+    • Running this command repeatedly will output the current time followed by the time since the last proc call.
+    • Type "sudo rmmod my_timer.ko" to remove the kernel module, followed by "lsmod|grep my_timer", to verify that the module was removed correctly. NOTE: "cat /proc/timed" will now issue an error, because the module no longer exists.
+    • To clean the directory the shell is running in, type "sudo make clean" into the command line.
+    • This will remove all but the my_timer.c and Makefiles.
   
   
   ////////////////////////////////////////////////////////////////////////////////////////////
