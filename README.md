@@ -2,29 +2,24 @@
 README
 
 Team Members and Responsibilities:
-  
   Conrad Horn:
     • Part 3 - System Calls
     • Part 3 - Proc (open, read, release)
-  
   
   Justin Bomwell:
     • I/O Redirection
     • Pipes
     • 
 
-  
   Scott Forn:
-  
-  • Part 1
-  
-  • Part 2
+    • Part 1
+    • Part 2
   
   //////////////////////////////////////////////////////////////////////////////////////////
 
   
 Tar Archive Contents:
-  
+
   PART1:
     
     empty.c:  
@@ -50,17 +45,18 @@ Tar Archive Contents:
       • Compiles empty.c and part1.c
       • Executes strace on empty.x and part1.x to create empty.log and part1.log
   
-  Compilation Instructions:
-    • To compile the project, move to the working directory that contains our opened .tar file
-    • Type "make" into the command line 
-    • To clean the directory the shell is running in, type "make clean" into the command line.
-    • This will remove the .o files and the "shell" executable.
+    Compilation Instructions:
+      • To compile the project, move to the working directory that contains our opened .tar file
+      • Type "make" into the command line 
+      • To clean the directory the shell is running in, type "make clean" into the command line.
+      • This will remove the .o files and the "shell" executable.
   
   
   ////////////////////////////////////////////////////////////////////////////////////////////
   
   
   PART2:
+  
     my_timer.c:
       • Prints prompt
       • Parses instructions
@@ -74,42 +70,77 @@ Tar Archive Contents:
     makefile:
       • Create my_timer.o in /lib/modules/
 
-   Compilation Instructions:
-    • To compile the project, move to the working directory that contains our opened .tar file
-    • Type "make" into the command line 
-    • To clean the directory the shell is running in, type "make clean" into the command line.
-    • This will remove the .o files and the "shell" executable.
+    Compilation Instructions:
+      • To compile the project, move to the working directory that contains our opened .tar file
+      • Type "make" into the command line 
+      • To clean the directory the shell is running in, type "make clean" into the command line.
+      • This will remove the .o files and the "shell" executable.
   
   
   ////////////////////////////////////////////////////////////////////////////////////////////
   
   
   PART3:
-    elevator.c:
-      • 
-      • 
-      • 
-      • 
-      • 
-      • 
-      • 
-      • 
   
-    Makefile:
-      • 
+    elevatorModule // Directory placed in /usr/src/linux-4.19.98
+      elevator.c:
+        • Function defenitions for system calls start_elevator, stop_elevator, and issue_request
+        • Creates proc/elevator 
+        • Initializes module
+        • Scheduling for elevator within kthread
   
-    Compilation Instructions:
-      • To compile the project, move to the working directory that contains our opened .tar file
-      • Type "make" into the command line 
-      • To clean the directory the shell is running in, type "make clean" into the command line.
-      • This will remove the .o files and the "shell" executable.
-
+      Makefile:
+        • Makes the directory as a module
+  
+    SystemCalls // Directory placed in /usr/src/linux-4.19.98    
+      issue_request.c:
+        • Defines system call for issuing a request
+        • links the system call to the kernel
+        
+      start_elevator.c:
+        • Defines system call for starting elevator
+        • links the system call to the kernel
+        
+      stop_elevator.c
+        • Defines system call for stoping elevator
+        • links the system call to the kernel
+        
+      Makefile: 
+        • Compiles the system call declarations
+        
+    elevator // Directory placed in home
+      producer.c:
+        • issues random requests to the elevator
+        
+      consumer.c:
+        • starts and stops the elevator
+        
+      wrappers.h:
+        • links the issue, start and stop functions from producer/consumer to system calls
+        • calls the specified system call
+        
+      Makefile:
+        • make insert - inserts module/makes proc/elevator
+        • make start - starts elevator
+        • make stop - stops elevator
+        • make remove - removes module
+        
+      Compilation Instructions:
+      • sudo make insert // in the elevator directory, uses insmod to insert module
+      • sudo make issue // adds people to floors waiting to be picked up, can call any time while module inserted
+      • sudo make start // starts elevator scheduling
+      • sudo make stop // stops elevator scheduling
+      • sudo make remove // removes elevator module using rmmod
+      
   
   ////////////////////////////////////////////////////////////////////////////////////////////
     
     
 Known Bugs/Unfinished Portions: 
-1.  Elevator waits 2*time on the top and bottom floors. (4 secs instead of 2)
-   
+  1. Elevator waits 2*time on the top and bottom floors. (4 secs instead of 2)
+    - Can be fixed by adding conditional statements on top and bottom floors for scheduling
+  2. Does not go into idle state when elevator empty
+    - Can add this with an extra if statement in scheduling 
 
 Special Considerations: 
+  1. In part 3 system calls need to be implemented which means the whole kernel must be recompiled before they will work on this section
