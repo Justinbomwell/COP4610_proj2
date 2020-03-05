@@ -8,20 +8,22 @@ Team Members and Responsibilities:
       • Part 3 - Proc (open, read, release)
   
     Justin Bomwell:
-      • I/O Redirection
-      • Pipes
+      • 
+      • Scheduling Code
       • 
 
     Scott Forn:
       • Part 1
       • Part 2
+      
+      
+      NOTE: As Part 3 was completed on a single computer, the processes and functional development/coding was a group effort of 3 students huddled around a computer, for three days.
   
-  //////////////////////////////////////////////////////////////////////////////////////////
 
   
 Tar Archive Contents:
 
-  PART1:
+  Part1:
     
     empty.c:  
       • Empty C program, for strace analysis.
@@ -53,10 +55,13 @@ Tar Archive Contents:
       • This will remove the *.o and *.log files.
   
   
-  ////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
   
-  
-  PART2:
+  Part2:
     
     my_timer.c:
       • Prints prompt
@@ -83,10 +88,13 @@ Tar Archive Contents:
       • This will remove all but the my_timer.c and Makefiles.
   
   
-  /////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
   
-  
-  PART3:
+  Part3:
   
     elevatorModule // Directory placed in /usr/src/linux-4.19.98
       elevator.c:
